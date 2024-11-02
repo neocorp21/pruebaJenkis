@@ -1,48 +1,28 @@
-
 pipeline {
     agent any
+
     stages {
         stage('Build') {
             steps {
-                // Ejecuta el comando de Maven para construir el proyecto
                 script {
                     echo 'Building the project...'
                     sh 'mvn clean package'
                 }
             }
         }
+
         stage('Test') {
             steps {
-                // Ejecuta las pruebas del proyecto
                 script {
                     echo 'Running tests...'
                     sh 'mvn test'
                 }
             }
         }
-        stage('Static Code Analysis') {
-            steps {
-                // Análisis de código estático (opcional)
-                script {
-                    echo 'Performing static code analysis...'
-                    sh 'mvn sonar:sonar'
-                }
-            }
-        }
-        stage('Deploy') {
-            steps {
-                // Despliega la aplicación (ajusta este paso según tu entorno)
-                script {
-                    echo 'Deploying the application...'
-                    // Aquí podrías agregar comandos específicos de despliegue
-                    // Por ejemplo, copiar archivos, ejecutar scripts de despliegue, etc.
-                }
-            }
-        }
     }
+
     post {
         always {
-            // Acciones que siempre se ejecutan después del pipeline
             echo 'Cleaning up...'
             cleanWs() // Limpia el workspace
         }
