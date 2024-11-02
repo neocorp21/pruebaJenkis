@@ -1,13 +1,3 @@
-# Dockerfile
-FROM jenkins/jenkins:lts
-
-# Instalar Maven
-USER root
-RUN apt-get update && apt-get install -y maven
-
-# Cambiar de nuevo al usuario Jenkins
-USER usuarioAdmin
-
 
 pipeline {
     agent any
