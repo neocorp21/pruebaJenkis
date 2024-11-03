@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                sh 'mvn clean compile'
+                sh 'mvn clean package'
             }
         }
         stage('Unit Tests') {
@@ -16,8 +16,11 @@ pipeline {
                 }
             }
         }
-
-
+        stage('Deploy') {
+            steps {
+                sh 'cp target/DemoJenkis.jar /var/jenkins_home/deploy/'
+            }
+        }
     }
     post {
         always {
