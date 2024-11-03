@@ -3,24 +3,50 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                sh 'mvn clean package'
+                script {
+                    try {
+                        sh 'mvn clean package'
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        error "Build failed: ${e.message}"
+                    }
+                }
             }
         }
         stage('Unit Tests') {
             steps {
-                sh 'mvn test'
+                script {
+                    try {
+                        sh 'mvn test'
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        error "Unit tests failed: ${e.message}"
+                    }
+                }
             }
-
         }
         stage('Deploy') {
             steps {
-                sh 'cp target/DemoJenkis.jar /var/jenkins_home/deploy/'
+                script {
+                    try {
+                        sh 'cp target/DemoJenkis.jar /var/jenkins_home/deploy/'
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        error "Deployment failed: ${e.message}"
+                    }
+                }
             }
         }
     }
     post {
         always {
             cleanWs()
+        }
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed. Check logs for details.'
         }
     }
 }
