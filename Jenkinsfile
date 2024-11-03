@@ -5,7 +5,8 @@ pipeline {
             steps {
                 script {
                     try {
-                        sh 'mvn clean package'
+                        def output = sh(script: 'mvn clean package', returnStdout: true).trim()
+                        echo "Build output: ${output}"
                     } catch (Exception e) {
                         currentBuild.result = 'FAILURE'
                         error "Build failed: ${e.message}"
@@ -17,7 +18,8 @@ pipeline {
             steps {
                 script {
                     try {
-                        sh 'mvn test'
+                        def output = sh(script: 'mvn test', returnStdout: true).trim()
+                        echo "Unit test output: ${output}"
                     } catch (Exception e) {
                         currentBuild.result = 'FAILURE'
                         error "Unit tests failed: ${e.message}"
@@ -29,7 +31,8 @@ pipeline {
             steps {
                 script {
                     try {
-                        sh 'cp target/DemoJenkis.jar /var/jenkins_home/deploy/'
+                        def output = sh(script: 'cp target/DemoJenkis.jar /var/jenkins_home/deploy/', returnStdout: true).trim()
+                        echo "Deployment output: ${output}"
                     } catch (Exception e) {
                         currentBuild.result = 'FAILURE'
                         error "Deployment failed: ${e.message}"
