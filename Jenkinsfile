@@ -16,16 +16,7 @@ pipeline {
                 }
             }
         }
-        stage('Code Coverage') {
-            steps {
-                sh 'mvn clean test jacoco:report'
-            }
-            post {
-                always {
-                    jacoco execPattern: '**/target/jacoco.exec'
-                }
-            }
-        }
+
         stage('Package') {
             steps {
                 sh 'mvn package'
