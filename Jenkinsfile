@@ -50,7 +50,6 @@ pipeline {
             steps {
                 script {
                     try {
-                        // Construye la imagen de Docker
                         def dockerImage = 'demo-jenkins-image'
                         sh "docker build -t ${dockerImage} ."
                         echo "Docker image ${dockerImage} built successfully."
@@ -64,21 +63,18 @@ pipeline {
 
         stage('Run Docker Container') {
             steps {
-                 script {
-                            try {
-                                // Nombre de la imagen Docker a crear
-                                def dockerImage = 'demo-jenkins-image'
+                script {
+                    try {
+                        def dockerImage = 'demo-jenkins-image'
+                        def containerName = 'demo-jenkins-container'
 
-                                // Comando para construir la imagen usando el Dockerfile
-                                sh "docker build -t ${dockerImage} ."
-
-                                // Mensaje de éxito
-                                echo "Docker image ${dockerImage} built successfully."
-                            } catch (Exception e) {
-                                // Manejo de errores en caso de fallo en la construcción
-                                currentBuild.result = 'FAILURE'
-                                error "\u001B[31mFailed to build Docker image: ${e.message}\u001B[0m"
-                            }
+                        // Ejecutar el contenedor en segundo plano
+                        sh "docker run -d --name ${containerName} ${dockerImage}"
+                        echo "Docker container ${containerName} is running."
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        error "\u001B[31mFailed to run Docker container: ${e.message}\u001B[0m"
+                    }
                 }
             }
         }
@@ -86,7 +82,7 @@ pipeline {
     post {
         always {
             cleanWs()
-            // Opcional: detener y eliminar el contenedor después de la ejecución
+            // Detener y eliminar el contenedor después de la ejecución
             sh "docker stop demo-jenkins-container || true"
             sh "docker rm demo-jenkins-container || true"
         }
