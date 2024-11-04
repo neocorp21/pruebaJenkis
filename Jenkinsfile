@@ -5,7 +5,7 @@ pipeline {
             steps {
                 script {
                     executeMavenCommand('clean package')
-                    listFilesInDirectory('target/')
+                    listFilesInDirectory('target/') // Listar archivos en el directorio target
                 }
             }
         }
