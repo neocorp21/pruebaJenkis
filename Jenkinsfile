@@ -46,14 +46,14 @@ pipeline {
             }
         }
 
-        stage('Run Application') {  // Nueva etapa para ejecutar el JAR
+        stage('Run Application') {
             steps {
                 script {
                     def jarPath = "/var/jenkins_home/deploy/DemoJenkis-0.0.1-SNAPSHOT.jar"
                     try {
                         // Ejecuta el JAR en segundo plano
-                        sh "java -jar ${jarPath} &"
-                        echo "Application is running."
+                        sh "nohup java -jar ${jarPath} > app.log 2>&1 &"
+                        echo "Application is running. Logs can be found in app.log."
                     } catch (Exception e) {
                         currentBuild.result = 'FAILURE'
                         error "\u001B[31mFailed to run application: ${e.message}\u001B[0m"
