@@ -4,39 +4,24 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    try {
-                        def output = sh(script: 'mvn clean package', returnStdout: true).trim()
-                        echo "Build output: ${output}"
-                    } catch (Exception e) {
-                        currentBuild.result = 'FAILURE'
-                        error "Build failed: ${e.message}"
-                    }
+                    executeMavenCommand('clean package')
+                    listFilesInDirectory('target/')
                 }
             }
         }
+
         stage('Unit Tests') {
             steps {
                 script {
-                    try {
-                        def output = sh(script: 'mvn test', returnStdout: true).trim()
-                        echo "Unit test output: ${output}"
-                    } catch (Exception e) {
-                        currentBuild.result = 'FAILURE'
-                        error "Unit tests failed: ${e.message}"
-                    }
+                    executeMavenCommand('test')
                 }
             }
         }
+
         stage('Deploy') {
             steps {
                 script {
-                    try {
-                        def output = sh(script: 'cp target/DemoJenkis.jar /var/jenkins_home/deploy/', returnStdout: true).trim()
-                        echo "Deployment output: ${output}"
-                    } catch (Exception e) {
-                        currentBuild.result = 'FAILURE'
-                        error "Deployment failed: ${e.message}"
-                    }
+                    deployJar('DemoJenkis.jar', '/var/jenkins_home/deploy/')
                 }
             }
         }
@@ -51,5 +36,40 @@ pipeline {
         failure {
             echo 'Pipeline failed. Check logs for details.'
         }
+    }
+}
+
+// Método para ejecutar comandos de Maven y manejar errores
+def executeMavenCommand(command) {
+    try {
+        def output = sh(script: "mvn ${command}", returnStdout: true).trim()
+        echo "Maven command output: ${output}"
+    } catch (Exception e) {
+        currentBuild.result = 'FAILURE'
+        error "Maven command '${command}' failed: ${e.message}"
+    }
+}
+
+// Método para listar archivos en un directorio
+def listFilesInDirectory(directory) {
+    try {
+        def output = sh(script: "ls -l ${directory}", returnStdout: true).trim()
+        echo "Files in ${directory}:\n${output}"
+    } catch (Exception e) {
+        currentBuild.result = 'FAILURE'
+        error "Failed to list files in directory '${directory}': ${e.message}"
+    }
+}
+
+// Método para desplegar el JAR
+def deployJar(jarName, destination) {
+    try {
+        // Verificar si el archivo JAR existe
+        sh "test -f target/${jarName}" // Lanza error si el archivo no existe
+        def output = sh(script: "cp target/${jarName} ${destination}", returnStdout: true).trim()
+        echo "Deployment output: ${output}"
+    } catch (Exception e) {
+        currentBuild.result = 'FAILURE'
+        error "Deployment of '${jarName}' to '${destination}' failed: ${e.message}"
     }
 }
