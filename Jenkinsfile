@@ -1,6 +1,21 @@
 pipeline {
     agent any
+
     stages {
+        stage('Check Docker') {
+            steps {
+                script {
+                    try {
+                        sh 'docker --version'
+                        echo "Docker is installed."
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        error "\u001B[31mDocker is not installed or not running: ${e.message}\u001B[0m"
+                    }
+                }
+            }
+        }
+
         stage('Build') {
             steps {
                 script {
@@ -36,6 +51,7 @@ pipeline {
                     def jarName = 'DemoJenkis-0.0.1-SNAPSHOT.jar'
                     def destination = '/var/jenkins_home/deploy/'
                     try {
+                        sh "mkdir -p ${destination}" // Crear el directorio de despliegue
                         def output = sh(script: "cp target/${jarName} ${destination}", returnStdout: true).trim()
                         echo "Deployment output: ${output}"
                     } catch (Exception e) {
@@ -68,6 +84,10 @@ pipeline {
                         def dockerImage = 'demo-jenkins-image'
                         def containerName = 'demo-jenkins-container'
 
+                        // Detener y eliminar contenedor existente
+                        sh "docker stop ${containerName} || true"
+                        sh "docker rm ${containerName} || true"
+
                         // Ejecutar el contenedor en segundo plano
                         sh "docker run -d --name ${containerName} ${dockerImage}"
                         echo "Docker container ${containerName} is running."
@@ -79,6 +99,7 @@ pipeline {
             }
         }
     }
+
     post {
         always {
             cleanWs()
