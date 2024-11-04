@@ -64,16 +64,21 @@ pipeline {
 
         stage('Run Docker Container') {
             steps {
-                script {
-                    try {
-                        // Ejecuta el contenedor en segundo plano
-                        def dockerContainerName = 'demo-jenkins-container'
-                        sh "docker run -d --name ${dockerContainerName} demo-jenkins-image"
-                        echo "Docker container ${dockerContainerName} is running."
-                    } catch (Exception e) {
-                        currentBuild.result = 'FAILURE'
-                        error "\u001B[31mFailed to run Docker container: ${e.message}\u001B[0m"
-                    }
+                 script {
+                            try {
+                                // Nombre de la imagen Docker a crear
+                                def dockerImage = 'demo-jenkins-image'
+
+                                // Comando para construir la imagen usando el Dockerfile
+                                sh "docker build -t ${dockerImage} ."
+
+                                // Mensaje de éxito
+                                echo "Docker image ${dockerImage} built successfully."
+                            } catch (Exception e) {
+                                // Manejo de errores en caso de fallo en la construcción
+                                currentBuild.result = 'FAILURE'
+                                error "\u001B[31mFailed to build Docker image: ${e.message}\u001B[0m"
+                            }
                 }
             }
         }
