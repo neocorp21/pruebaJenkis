@@ -37,7 +37,7 @@ pipeline {
                     sh 'docker stop demo-jenkins-app || true && docker rm demo-jenkins-app || true'
 
                     // Ejecutar la nueva versión de la aplicación en el puerto 8082
-                    sh "docker run -d --name demo-jenkins-app -p 8082:8082 ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                    sh "docker run -d --name demo-jenkins-app -p 8082:8080 ${DOCKER_IMAGE}:${DOCKER_TAG}"
                 }
             }
         }
