@@ -1,118 +1,28 @@
 pipeline {
     agent any
-
-    environment {
-        JAR_NAME = 'DemoJenkis-0.0.1-SNAPSHOT.jar'
-        DESTINATION = '/var/jenkins_home/deploy/'
-        DOCKER_IMAGE = 'demo-jenkins-image'
-        CONTAINER_NAME = 'demo-jenkins-container'
-    }
-
     stages {
-        stage('Check Docker') {
+        stage('Clonar Código') {
             steps {
-                script {
-                    try {
-                        sh 'docker --version'
-                        echo "Docker is installed."
-                    } catch (Exception e) {
-                        currentBuild.result = 'FAILURE'
-                        error "\u001B[31mDocker is not installed or not running: ${e.message}\u001B[0m"
-                    }
-                }
+                // Clonar el repositorio de código
+                git url: 'https://github.com/neocorp21/pruebaJenkis.git', branch: 'main'
             }
         }
-
-        stage('Build') {
+        stage('Construir Imagen Docker') {
             steps {
-                script {
-                    try {
-                        def output = sh(script: 'mvn clean package', returnStdout: true).trim()
-                        echo "Build output: ${output}"
-                        sh 'ls -l target/'
-                    } catch (Exception e) {
-                        currentBuild.result = 'FAILURE'
-                        error "\u001B[31mBuild failed: ${e.message}\u001B[0m"
-                    }
-                }
+                // Construir la imagen Docker para la aplicación Spring Boot
+                sh 'docker build -t demo-jenkins-app:0.0.1-SNAPSHOT .'
             }
         }
-
-        stage('Unit Tests') {
+        stage('Desplegar Aplicación') {
             steps {
                 script {
-                    try {
-                        def output = sh(script: 'mvn test', returnStdout: true).trim()
-                        echo "Unit test output: ${output}"
-                    } catch (Exception e) {
-                        currentBuild.result = 'FAILURE'
-                        error "\u001B[31mUnit tests failed: ${e.message}\u001B[0m"
-                    }
+                    // Detiene y elimina el contenedor anterior, si existe
+                    sh 'docker stop demo-jenkins-app || true && docker rm demo-jenkins-app || true'
+
+                    // Ejecuta la nueva versión en el puerto 8082
+                    sh 'docker run -d --name demo-jenkins-app -p 8082:8080 demo-jenkins-app:0.0.1-SNAPSHOT'
                 }
             }
-        }
-
-        stage('Deploy') {
-            steps {
-                script {
-                    try {
-                        sh "mkdir -p ${DESTINATION}" // Crear el directorio de despliegue
-                        def output = sh(script: "cp target/${JAR_NAME} ${DESTINATION}", returnStdout: true).trim()
-                        echo "Deployment output: ${output}"
-                    } catch (Exception e) {
-                        currentBuild.result = 'FAILURE'
-                        error "\u001B[31mDeployment failed: ${e.message}\u001B[0m"
-                    }
-                }
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    try {
-                        sh "docker build -t ${DOCKER_IMAGE} ."
-                        echo "Docker image ${DOCKER_IMAGE} built successfully."
-                    } catch (Exception e) {
-                        currentBuild.result = 'FAILURE'
-                        error "\u001B[31mFailed to build Docker image: ${e.message}\u001B[0m"
-                    }
-                }
-            }
-        }
-
-        stage('Run Docker Container') {
-            steps {
-                script {
-                    try {
-                        // Detener y eliminar contenedor existente
-                        sh "docker stop ${CONTAINER_NAME} || true"
-                        sh "docker rm ${CONTAINER_NAME} || true"
-
-                        // Ejecutar el contenedor en segundo plano
-                        sh "docker run -d --name ${CONTAINER_NAME} ${DOCKER_IMAGE}"
-                        echo "Docker container ${CONTAINER_NAME} is running."
-                    } catch (Exception e) {
-                        currentBuild.result = 'FAILURE'
-                        error "\u001B[31mFailed to run Docker container: ${e.message}\u001B[0m"
-                    }
-                }
-            }
-        }
-    }
-
-    post {
-        always {
-            cleanWs()
-            // Detener y eliminar el contenedor después de la ejecución
-            sh "docker stop ${CONTAINER_NAME} || true"
-            sh "docker rm ${CONTAINER_NAME} || true"
-        }
-        success {
-            echo 'Pipeline completed successfully!'
-        }
-        failure {
-            echo 'Pipeline failed. Check logs for details.'
         }
     }
 }
