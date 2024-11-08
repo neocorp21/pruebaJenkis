@@ -11,6 +11,17 @@ pipeline {
                 git url: 'https://github.com/neocorp21/pruebaJenkis.git', branch: 'main'
             }
         }
+        stage('Construir JAR') {
+            steps {
+                script {
+                    // Ejecuta mvn clean package para construir el archivo JAR
+                    sh 'mvn clean package'
+
+                    // Verifica si el archivo JAR existe en target/
+                    sh 'ls -l target/demo-jenkins-app-0.0.1-SNAPSHOT.jar'
+                }
+            }
+        }
         stage('Construir Imagen Docker') {
             steps {
                 script {
@@ -26,7 +37,7 @@ pipeline {
                     sh 'docker stop demo-jenkins-app || true && docker rm demo-jenkins-app || true'
 
                     // Ejecutar la nueva versión de la aplicación en el puerto 8082
-                    sh "docker run -d --name demo-jenkins-app -p 8082:8080 ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                    sh "docker run -d --name demo-jenkins-app -p 8082:8082 ${DOCKER_IMAGE}:${DOCKER_TAG}"
                 }
             }
         }
