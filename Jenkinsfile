@@ -18,7 +18,7 @@ pipeline {
             steps {
                 script {
                     // Ejecutar Maven para construir el JAR
-                    sh 'mvn clean package -DskipTests'
+                    sh 'mvn clean install'
                 }
             }
         }
