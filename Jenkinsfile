@@ -35,11 +35,14 @@ pipeline {
         stage('Desplegar Aplicación') {
             steps {
                 script {
-                    // Detener y eliminar el contenedor si ya está en ejecución
-                    sh 'docker ps -q -f "name=demo-jenkins-app" | xargs -r docker stop | xargs -r docker rm'
+                    // Verificar si ya existe un contenedor en ejecución con el mismo nombre
+                      // Detener y eliminar el contenedor si ya está en ejecución (forzando la eliminación si es necesario)
+                                sh 'docker ps -q -f "name=demo-jenkins-app" | xargs -r docker stop | xargs -r docker rm -f'
 
-                    // Ejecutar el contenedor de la nueva imagen
-                    sh 'docker run -d -p 8082:8082 --name demo-jenkins-app ${DOCKER_IMAGE}'
+                                // Ejecutar el contenedor de la nueva imagen
+                                sh 'docker run -d -p 8082:8082 --name demo-jenkins-app ${DOCKER_IMAGE}'
+
+
                 }
             }
         }
