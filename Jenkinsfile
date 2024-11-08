@@ -8,8 +8,9 @@ pipeline {
     stages {
         stage('Clonar Código') {
             steps {
-                // Clonar el repositorio desde GitHub
-                git 'https://github.com/neocorp21/pruebaJenkis.git'
+             // Clonar el repositorio desde GitHub, especificando la rama 'main'
+             git branch: 'main', url: 'https://github.com/neocorp21/pruebaJenkis.git'
+
             }
         }
 
